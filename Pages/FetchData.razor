@@ -1,6 +1,8 @@
 @page "/fetchdata"
 @using BlazorQRCode.Data;
-@inject BlazorQRCode.Data.AthleteService  athsService;
+@inject BlazorQRCode.Data.AthleteService  athsService
+@inject BlazorQRCode.Data.HomeController  homeController
+@inject NavigationManager navigationManager
 
 <h2>Aths Essendon Track Log</h2>
 <h1>Logged Athletes</h1>
@@ -11,7 +13,17 @@
 }
 else
 {
-    <button class="btn btn-primary" @onclick="ClearData">Clear Data</button>
+    <table class="table2">
+        <tr>
+            <td> <button class="btn btn-primary" @onclick="ClearData">Clear Data</button></td>
+            <td>&nbsp;&nbsp;</td>
+            <td><button class="btn btn-primary" @onclick="LogOut">LogOut</button></td>
+        </tr>
+
+    </table>
+    <p><b>Note: After logging out please refresh the rendered page.</b></p>
+
+
     <table class="table">
         <thead>
             <tr>
@@ -36,17 +48,28 @@ else
 }
 
 @code {
-    private Athlete[] athletes;
 
     protected override void OnInitialized()
     {
+        if (!homeController.GetState())
+        {
+            navigationManager.NavigateTo("/");
+        }
         athletes = athsService.GetAthletes();
     }
 
-    public void ClearData()
+    private Athlete[] athletes;
+
+    private void ClearData()
     {
         athsService.ClearData();
         athletes = athsService.GetAthletes();
+    }
+
+    private void LogOut()
+    {
+        homeController.LogOut();
+        navigationManager.NavigateTo("/");
     }
 
 }

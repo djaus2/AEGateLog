@@ -1,11 +1,13 @@
 ﻿@page "/Thanks"
 @page "/Thanks/{CurrentCount:int}"
 @inject NavigationManager navigationManager
+@inject BlazorQRCode.Data.HomeController  homeController
 
 <h2>Athletics Essendon Track Log </h2>
 <h1>Further Information</h1>
 <br />
 <p><b>Thanks for logging your track attendance today.<br />You need to do this each time you attend the track.<br /><i>Suggestion:</i></b>Save the link in your phone's browser Favourites</p>
+<p>Today's PIn is @Pin</p>
 <h2><i>Further:</i></h2>
 <ul>
     <li>
@@ -34,13 +36,14 @@
 @code{
     [Parameter]
     public int? CurrentCount { get; set; }
+    private int Pin { get; set; }
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
         CurrentCount = CurrentCount ?? 1;
-        int ticks = (int)(DateTime.Today.Ticks % 997);
-        if (CurrentCount != ticks)
+        Pin = homeController.Pin;
+        if (CurrentCount != Pin)
         {
             navigationManager.NavigateTo("/");
         }

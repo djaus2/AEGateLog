@@ -1,5 +1,5 @@
-﻿@page "/Log"
-@page "/Log/{CurrentCount:int}"
+﻿@page "/Manage"
+@page "/Manage/{CurrentCount:int}"
 @inject NavigationManager navigationManager
 @using System.ComponentModel.DataAnnotations;
 @using BlazorQRCode.Data;
@@ -7,46 +7,42 @@
 @inject BlazorQRCode.Data.HomeController  homeController
 
 <h2>Aths Essendon Track Log</h2>
-<h1>Log attendance</h1>
+<h1>Management Login</h1>
 
 <br />
 
-<EditForm OnValidSubmit=@OnValidSubmit Model="@athlete">
+<EditForm OnValidSubmit=@OnValidSubmit Model="@admin">
     <DataAnnotationsValidator />
     <ValidationSummary />
     <div class="form-group">
         <label for="Name">Name</label>
-        <InputText @bind-Value=athlete.Name class="form-control" id="Name" PlaceHolder="Please enter a first name at least." />
-        <ValidationMessage For="@(() => athlete.Name)" />
+        <InputText @bind-Value=admin.Name class="form-control" id="Name" PlaceHolder="Please enter a first name at least." />
+        <ValidationMessage For="@(() => admin.Name)" />
     </div>
     <div class="form-group">
-        <label for="Age">Mobile Number without leading 0</label><br />
-        <InputText @bind-Value=athlete.PhoneNumber class="form-control" id="Mobile" PlaceHolder="Please enter a valid mobile number, eg 0456789123" />
-        <ValidationMessage For="@(() => athlete.PhoneNumber)" />
+        <label for="Age">Password</label><br />
+        <InputText type="password" @bind-Value=admin.Pwd class="form-control" id="Mobile" PlaceHolder="Please enter a valid mobile number, eg 0456789123" />
+        <ValidationMessage For="@(() => admin.Pwd)" />
     </div>
-    <input type="submit" class="btn btn-primary" value="Log Me" />
+    <input type="submit" class="btn btn-primary" value="Manage" />
 </EditForm>
+<p><b>Note: After logging in please refresh the rendered page.</b></p>
 @code {
     [Parameter]
     public int? CurrentCount { get; set; }
 
-    DAthlete athlete = new DAthlete();
+    DAdmin admin = new DAdmin();
     string PhoneText { get; set; } = "04";
     string Club { get; set; } = "";
     string Output { get; set; } = "";
     string error { get; set; }
-
-    void LogOut()
-    {
-
-    }
 
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
         CurrentCount = CurrentCount ?? 1;
-        int ticks = homeController.Pin;
+        int ticks = (int)(DateTime.Today.Ticks % 997);
         if (CurrentCount != ticks)
         {
             navigationManager.NavigateTo("/");
@@ -60,12 +56,15 @@
         error = null;
         try
         {
-            int pin = homeController.Pin;
-            string name = athlete.Name;
-            string phone = athlete.PhoneNumber;
-            athsService.AddAthlete(name, phone, pin);
-            string target = $"/Thanks/{pin}";
-            navigationManager.NavigateTo(target);
+            string name = admin.Name;
+            string phone = admin.Pwd;
+            if (homeController.Authenticate(name, phone))
+            {
+                string target = $"/FetchData";
+                navigationManager.NavigateTo(target);
+            }
+            else
+                navigationManager.NavigateTo("/");
         }
         catch (Exception ex)
         {
@@ -73,14 +72,13 @@
         }
     }
 
-    public class DAthlete
+    public class DAdmin
     {
         [Required]
         public string Name { get; set; }
 
         [Required]
-        [Phone]
-        public string PhoneNumber { get; set; }
+        public string Pwd { get; set; }
 
     }
 

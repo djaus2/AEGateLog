@@ -8,51 +8,38 @@
 
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor httpContextAccessor
+@inject BlazorQRCode.Data.HomeController  homeController
+@inject NavigationManager navigationManager
 
 <h2>Athletics Essendon Track Log </h2>
 <h1><font size="30">Please Register Your Track Access</font></h1>
 <h2>Nb: This is now a mandatory requirement due to COVID-19.</h2>
+<p>
+Use the QR Code to access the site: Site it in your phone's camera. <br />
+Or enter the following URL in your phone's browser.
+</p>
+<h2>@InputText</h2>
+<h2>OR ...</h2>
+<h2>@bitly</h2>
 <br />
 <br />
 
-<h2>@InputText</h2>
-<br />
-<a href="@InputText">@InputText</a><br />
-Shorter:<br />
-<h2>@bitly</h2>
-<br />
-<!-- button class="btn btn-primary" @onclick="GenerateQRCode"Generate QR Code -->
-<br />
-@*<br />
-    <a href="https://www.youtube.com/watch?v=FzwRxmy7eV4">YouTub Video of how to make this app.</a>
-    <a href="https://github.com/httphandlers/QRCoder">The GitHub site for the QrCode.Net Nuget Package</a>
-    <br />
-    <br />
-    <input type="text" @bind="InputText" placeholder="Enter URL here ..." />
-    <br />
-    <br />
-    <button class="btn btn-primary" @onclick="@GenerateQRCode">Generate QR Code</button>
-    <br />
-    <br />*>*@
 <img src="@QRCodeStr" style="width:400px;height:400px;" />
 
 @code{
     string InputText { get; set; } = "";
     string QRCodeStr { get; set; } = "";
-    string bitly {get; set;} = "https://bit.ly/3fnzHij";
+    string bitly { get; set; } = "https://bit.ly/3fnzHij";
 
 
 
     protected override void OnInitialized()
     {
+        if (!homeController.GetState())
+        {
+            navigationManager.NavigateTo("/");
+        }
         GenerateQRCode();
-        //GenerateQRCode();
-        //Task t3 = Task.Run(() =>
-        //{
-        //    GenerateQRCode();
-        //});
-        //// Wait for the task to finish.
-        //await t3;
     }
 
 
@@ -61,7 +48,7 @@ Shorter:<br />
         //var zz = httpContextAccessor.HttpContext.Request;
         //string url = httpContextAccessor.HttpContext.Request.Scheme + "://" + httpContextAccessor.HttpContext.Request.Host.Value;
         //InputText = url + "";
-        InputText ="https://athsessgate.azurewebsites.net/";
+        InputText = "https://athsessgate.azurewebsites.net/";
         StateHasChanged();
         //var z = HttpContext.Request.UrlReferrer;
         //QRCodeStr = "";
