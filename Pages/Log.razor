@@ -1,0 +1,83 @@
+﻿@page "/Log"
+@page "/Log/{CurrentCount:int}"
+@inject NavigationManager navigationManager
+@using System.ComponentModel.DataAnnotations;
+@using BlazorQRCode.Data;
+@inject BlazorQRCode.Data.AthleteService  athsService
+
+<h2>Aths Essendon Track Log</h2>
+<h1>Log attendance</h1>
+
+<br />
+
+<EditForm OnValidSubmit=@OnValidSubmit Model="@athlete">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-group">
+        <label for="Name">Name</label>
+        <InputText @bind-Value=athlete.Name class="form-control" id="Name" PlaceHolder="Please enter a first name at least." />
+        <ValidationMessage For="@(() => athlete.Name)" />
+    </div>
+    <div class="form-group">
+        <label for="Age">Mobile Number without leading 0</label><br />
+        <InputText @bind-Value=athlete.PhoneNumber class="form-control" id="Mobile" PlaceHolder="Please enter a valid mobile number, eg 0456789123" />
+        <ValidationMessage For="@(() => athlete.PhoneNumber)" />
+    </div>
+    <input type="submit" class="btn btn-primary" value="Save" />
+</EditForm>
+
+@code {
+        [Parameter]
+        public int? CurrentCount { get; set; }
+
+        DAthlete athlete = new DAthlete();
+        string PhoneText { get; set; } = "04";
+        string Club { get; set; } = "";
+        string Output { get; set; } = "";
+        string error { get; set; }
+
+
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+            CurrentCount = CurrentCount ?? 1;
+            int ticks = (int)(DateTime.Today.Ticks % 997);
+            if (CurrentCount != ticks)
+            {
+                navigationManager.NavigateTo("/");
+            }
+        }
+
+
+        void OnValidSubmit(EditContext editContext)
+        //async Task OnSubmit()
+        {
+            error = null;
+            try
+            {
+                int pin = (int)(DateTime.Today.Ticks % 997);
+                string name = athlete.Name;
+                string phone = athlete.PhoneNumber;
+                athsService.AddAthlete(name,phone,pin);
+                string target = $"/Thanks/{pin}";
+                navigationManager.NavigateTo(target);
+            }
+            catch (Exception ex)
+            {
+                error = ex.Message;
+            }
+        }
+
+    public class DAthlete
+    {
+        [Required]
+        public string Name { get; set; }
+
+        [Required]
+        [Phone]
+        public string PhoneNumber { get; set; }
+
+    }
+
+
+}

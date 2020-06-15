@@ -1,0 +1,38 @@
+﻿@page "/"
+@page "/Acceptance"
+@inject NavigationManager navigationManager
+
+<h2>Aths Essendon Track Log</h2>
+<h1>Purpose of this log.</h1>
+<br />
+<button class="btn btn-primary" @onclick="Continue">Continue</button>
+<br />
+<p><b>By continuing you understand and accept the terms and conditions.</b></p>
+<ul>
+    <li>The purpose of this site is to log the MVAT usage</li>
+    <li>This is only for COVID-19 tracing.</li>
+    <li>If someone who logged here today is subsequently detected with COVID-19 then you will be contacted via your mobile number.</li>
+    <li>You <i><b>must</b></i> submit your mobile number on the next page to gain access to the track.</li>
+    <li>Your mobile number will <i><b>not</b></i> be used for any other purpose.</li>
+    <li>It will be logged here with a timestamp.</li>
+    <li>That log will be deleted after 28 days and will not be used for any other purpose other than COVID-19 tracking.</li>
+    <li><ul>
+        <li>Except that in the case of an incident it will be deleted once tracing is complete.</li>
+    </ul></li>
+</ul>
+
+
+
+
+
+@code{
+
+    private void Continue()
+    {
+        int ticks = (int)(DateTime.Today.Ticks % 997);
+        string target = $"/Log/{ticks}";
+        navigationManager.NavigateTo(target);
+    }
+
+}
+

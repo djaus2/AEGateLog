@@ -1,0 +1,45 @@
+@page "/fetchdata"
+@using BlazorQRCode.Data;
+@inject BlazorQRCode.Data.AthleteService  athsService;
+
+<h2>Aths Essendon Track Log</h2>
+<h1>Logged Athletes</h1>
+<br />
+@if (athsService == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Date.Time</th>
+                <th>Pin</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ath in athletes)
+            {
+                <tr>
+                    <td>@ath.Name</td>
+                    <td>@ath.PhoneNumber</td>
+                    <td>@ath.TimeStamp</td>
+                    <td>@ath.Pin</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Athlete[] athletes;
+
+    protected override void OnInitialized()
+    {
+        athletes = athsService.GetAthletes();
+    }
+
+}
