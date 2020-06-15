@@ -21,5 +21,10 @@ namespace BlazorQRCode.Data
    
             //}).ToArray());
         }
+
+        public void ClearData()
+        {
+            Athletes = new List<Athlete>();
+        }
     }
 }
