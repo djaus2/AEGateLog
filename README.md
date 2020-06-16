@@ -16,4 +16,5 @@ Demo: [On Azure](https://bit.ly/3fnzHij)
   - App then enables the QR Code page and FetchData page.
   - Logout on FetchData page.
   - Login and out may need the page to be refreshed.
+  - Alos; Once Admined in if go to non Admin page you are logged out.
 - Next add a database, probably SQLite.
