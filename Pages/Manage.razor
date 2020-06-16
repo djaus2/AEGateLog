@@ -43,6 +43,10 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        if (homeController.GetState())
+        {
+            homeController.LogOut();
+        }
         CurrentCount = CurrentCount ?? 1;
         if (CurrentCount != Settings.ManagementPin)
         {

@@ -1,6 +1,7 @@
 ﻿@page "/"
 @page "/Acceptance"
 @inject NavigationManager navigationManager
+@inject BlazorQRCode.Data.HomeController  homeController
 
 <h2>Aths Essendon Track Log</h2>
 <h1>Purpose of this Log</h1>
@@ -16,9 +17,11 @@
     <li>Your mobile number will <i><b>not</b></i> be used for any other purpose.</li>
     <li>It will be logged here with a timestamp.</li>
     <li>That log will be deleted after 28 days and will not be used for any other purpose other than COVID-19 tracking.</li>
-    <li><ul>
-        <li>Except that in the case of an incident it will be deleted once tracing is complete.</li>
-    </ul></li>
+    <li>
+        <ul>
+            <li>Except that in the case of an incident it will be deleted once tracing is complete.</li>
+        </ul>
+    </li>
 </ul>
 
 
@@ -30,6 +33,10 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        if (homeController.GetState())
+        {
+            homeController.LogOut();
+        }
         this.StateHasChanged();
     }
 

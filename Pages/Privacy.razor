@@ -1,5 +1,5 @@
 ﻿@page "/Privacy"
-
+@inject BlazorQRCode.Data.HomeController  homeController
 <h2>Aths Essendon Track Log </h2>
 <h1>COVID-19</h1>
 <br />
@@ -18,4 +18,17 @@
     </li>
 
 </ul>
+
+@code{
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (homeController.GetState())
+        {
+            homeController.LogOut();
+        }
+        this.StateHasChanged();
+    }
+}
 

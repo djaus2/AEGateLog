@@ -1,9 +1,18 @@
 ﻿@page "/Homekl"
-
+@inject BlazorQRCode.Data.HomeController  homeController
 
 <h1>Index</h1>
 
 @code{
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (homeController.GetState())
+        {
+            homeController.LogOut();
+        }
+        this.StateHasChanged();
+    }
 }
 

@@ -1,10 +1,11 @@
 ﻿@page "/COVID-19"
+@inject BlazorQRCode.Data.HomeController  homeController
 
 <h2>Aths Essendon Track Log</h2>
 <h1>COVID-19</h1>
 <br />
 This is just a place holder
-<br/>
+<br />
 
 <ul>
     <li>
@@ -32,3 +33,16 @@ This is just a place holder
         stay at home if you have any cold or flu symptoms. Seek medical advice and get tested for COVID-19
     </li>
 </ul>
+
+@code{
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (homeController.GetState())
+        {
+            homeController.LogOut();
+        }
+        this.StateHasChanged();
+    }
+}
