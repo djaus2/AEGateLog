@@ -27,6 +27,12 @@
 
 @code{
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        this.StateHasChanged();
+    }
+
     private void Continue()
     {
         int ticks = (int)(DateTime.Today.Ticks % 997);

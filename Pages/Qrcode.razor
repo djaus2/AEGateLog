@@ -1,4 +1,5 @@
 ﻿@page "/QRCode"
+@page "/QRCode/{CurrentCount:int}"
 @using QRCoder;
 @using System.Drawing;
 @using System.Drawing.Imaging;
@@ -13,10 +14,10 @@
 
 <h2>Athletics Essendon Track Log </h2>
 <h1><font size="30">Please Register Your Track Access</font></h1>
-<h2>Nb: This is now a mandatory requirement due to COVID-19.</h2>
+<h2>Now a mandatory requirement due to COVID-19.</h2>
 <p>
-Use the QR Code to access the site: Site it in your phone's camera. <br />
-Or enter the following URL in your phone's browser.
+    Use the QR Code to access the site: Site it in your phone's camera. <br />
+    Or enter the following URL in your phone's browser.
 </p>
 <h2>@InputText</h2>
 <h2>OR ...</h2>
@@ -24,9 +25,12 @@ Or enter the following URL in your phone's browser.
 <br />
 <br />
 
-<img src="@QRCodeStr" style="width:400px;height:400px;" />
+<img src="@QRCodeStr" style="width:500px;height:500px;" />
 
 @code{
+    [Parameter]
+    public int? CurrentCount { get; set; }
+
     string InputText { get; set; } = "";
     string QRCodeStr { get; set; } = "";
     string bitly { get; set; } = "https://bit.ly/3fnzHij";
@@ -35,6 +39,12 @@ Or enter the following URL in your phone's browser.
 
     protected override void OnInitialized()
     {
+        base.OnInitialized();
+        CurrentCount = CurrentCount ?? 1;
+        if (CurrentCount != Data.Settings.QrcodePin)
+        {
+            navigationManager.NavigateTo("/");
+        }
         if (!homeController.GetState())
         {
             navigationManager.NavigateTo("/");

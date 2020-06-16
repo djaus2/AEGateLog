@@ -5,6 +5,7 @@
 @using BlazorQRCode.Data;
 @inject BlazorQRCode.Data.AthleteService  athsService
 @inject BlazorQRCode.Data.HomeController  homeController
+@inject BlazorQRCode.Data.MyService  myService
 
 <h2>Aths Essendon Track Log</h2>
 <h1>Management Login</h1>
@@ -16,17 +17,18 @@
     <ValidationSummary />
     <div class="form-group">
         <label for="Name">Name</label>
-        <InputText @bind-Value=admin.Name class="form-control" id="Name" PlaceHolder="Please enter a first name at least." />
+        <InputText @bind-Value=admin.Name class="form-control" id="Name"  />
         <ValidationMessage For="@(() => admin.Name)" />
     </div>
     <div class="form-group">
         <label for="Age">Password</label><br />
-        <InputText type="password" @bind-Value=admin.Pwd class="form-control" id="Mobile" PlaceHolder="Please enter a valid mobile number, eg 0456789123" />
+        <InputText type="password" @bind-Value=admin.Pwd class="form-control" id="Mobile"  />
         <ValidationMessage For="@(() => admin.Pwd)" />
     </div>
     <input type="submit" class="btn btn-primary" value="Manage" />
 </EditForm>
 <p><b>Note: After logging in please refresh the rendered page.</b></p>
+<p>Nb: This page will be removed from the sidebar. Note the URL above which will access it.</p>
 @code {
     [Parameter]
     public int? CurrentCount { get; set; }
@@ -42,8 +44,7 @@
     {
         base.OnInitialized();
         CurrentCount = CurrentCount ?? 1;
-        int ticks = (int)(DateTime.Today.Ticks % 997);
-        if (CurrentCount != ticks)
+        if (CurrentCount != Settings.ManagementPin)
         {
             navigationManager.NavigateTo("/");
         }
@@ -60,7 +61,8 @@
             string phone = admin.Pwd;
             if (homeController.Authenticate(name, phone))
             {
-                string target = $"/FetchData";
+                myService.CallRequestRefresh();
+                string target = $"/FetchData/{Settings.FetchDataPin}";
                 navigationManager.NavigateTo(target);
             }
             else

@@ -1,8 +1,10 @@
 @page "/fetchdata"
+@page "/fetchdata/{CurrentCount:int}"
 @using BlazorQRCode.Data;
 @inject BlazorQRCode.Data.AthleteService  athsService
 @inject BlazorQRCode.Data.HomeController  homeController
 @inject NavigationManager navigationManager
+@inject BlazorQRCode.Data.MyService  myService
 
 <h2>Aths Essendon Track Log</h2>
 <h1>Logged Athletes</h1>
@@ -21,7 +23,7 @@ else
         </tr>
 
     </table>
-    <p><b>Note: After logging out please refresh the rendered page.</b></p>
+    <p><b>Note: After logging in/out please refresh the rendered page.</b></p>
 
 
     <table class="table">
@@ -49,13 +51,23 @@ else
 
 @code {
 
+    [Parameter]
+    public int? CurrentCount { get; set; }
+
     protected override void OnInitialized()
     {
+        base.OnInitialized();
+        CurrentCount = CurrentCount ?? 1;
+        if (CurrentCount != Data.Settings.FetchDataPin)
+        {
+            navigationManager.NavigateTo("/");
+        }
         if (!homeController.GetState())
         {
             navigationManager.NavigateTo("/");
         }
         athletes = athsService.GetAthletes();
+        this.StateHasChanged();
     }
 
     private Athlete[] athletes;
@@ -69,6 +81,7 @@ else
     private void LogOut()
     {
         homeController.LogOut();
+        myService.CallRequestRefresh();
         navigationManager.NavigateTo("/");
     }
 
