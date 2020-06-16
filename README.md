@@ -7,9 +7,10 @@ Demo: [On Azure](https://bit.ly/3fnzHij)
   - Do not persist real phone numbers
   - There is a clear data button.
 - Not all pages show on sidebar.
-  - Want users to accept before getting to page
-  - Admin login wil also be similarly hidden, notat the moment
+  - Want users to accept before getting to log page
+  - Admin login (Mangement) wil also be similarly hidden, nota t the moment though.
   - Magic numbers are in the path for these pages which is checked.
+    - A daily pin number is also used for some pages.
 - Pseudo Admin mode.
   - Login from Management tab
   - App then enables the QR Code page and FetchData page.
