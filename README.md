@@ -11,10 +11,13 @@ Demo: [On Azure](https://bit.ly/3fnzHij)
   - Admin login (Mangement) wil also be similarly hidden, nota t the moment though.
   - Magic numbers are in the path for these pages which is checked.
     - A daily pin number is also used for some pages.
+ - FetchData page
+   - Only in admin mode
+   - Now has Calendar
 - Pseudo Admin mode.
   - Login from Management tab
   - App then enables the QR Code page and FetchData page.
   - Logout on FetchData page.
   - Login and out may need the page to be refreshed.
-  - Alos; Once Admined in if go to non Admin page you are logged out.
+  - Also; Once Admined in if go to non Admin page you are logged out.
 - Next add a database, probably SQLite.
