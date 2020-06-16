@@ -1,5 +1,7 @@
 @page "/fetchdata"
 @page "/fetchdata/{CurrentCount:int}"
+@using NodaTime;
+@using System
 @using BlazorQRCode.Data;
 @inject BlazorQRCode.Data.AthleteService  athsService
 @inject BlazorQRCode.Data.HomeController  homeController
@@ -11,48 +13,70 @@
 <br />
 @if (athsService == null)
 {
-    <p><em>Loading...</em></p>
+<p><em>Loading...</em></p>
 }
 else
 {
-    <table class="table2">
+<table class="table2">
+    <tbody>
         <tr>
-            <td> <button class="btn btn-primary" @onclick="ClearData">Clear Data</button></td>
-            <td>&nbsp;&nbsp;</td>
-            <td><button class="btn btn-primary" @onclick="LogOut">LogOut</button></td>
+            <td colspan="3">
+                <input id="Date" value=@ThisDate type="text" @onfocus="@DatePickerFocused" />
+                <DatePicker Style="opacity:1" SelectedDate="BookingDate_Local" Visible="DatePickerVisible" OnSelected="LocaDateSelected"   />
+            </td>
         </tr>
+    </tbody>
+</table>
 
-    </table>
-    <p><b>Note: After logging in/out please refresh the rendered page.</b></p>
+<table class="table2">
+    <tr>
+        <td> <button class="btn btn-primary" @onclick="GetData">Get all Data</button></td>
+        <td>&nbsp;&nbsp;</td>
+        <td> <button class="btn btn-primary" @onclick="ClearData">Clear Data</button></td>
+        <td>&nbsp;&nbsp;</td>
+        <td><button class="btn btn-primary" @onclick="LogOut">LogOut</button></td>
+    </tr>
+
+</table>
+<p><b>Note: After logging in/out please refresh the rendered page.</b></p>
 
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Date.Time</th>
-                <th>Pin</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var ath in athletes)
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Pin</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ath in athletes)
             {
-                <tr>
-                    <td>@ath.Name</td>
-                    <td>@ath.PhoneNumber</td>
-                    <td>@ath.TimeStamp</td>
-                    <td>@ath.Pin</td>
-                </tr>
+        <tr>
+            <td>@ath.Name</td>
+            <td>@ath.PhoneNumber</td>
+            <td>@ath.Date</td>
+            <td>@ath.Time</td>
+            <td>@ath.Pin</td>
+        </tr>
             }
-        </tbody>
-    </table>
-}
+    </tbody>
+</table>
+            }
 
 @code {
 
     [Parameter]
     public int? CurrentCount { get; set; }
+
+    DateTime BookingDate_DT;
+    DateTime Today_DT;
+    LocalDate Today_Local;
+    LocalDate BookingDate_Local;
+    string ThisDate;
+    bool DatePickerVisible=false;
 
     protected override void OnInitialized()
     {
@@ -66,7 +90,13 @@ else
         {
             navigationManager.NavigateTo("/");
         }
-        athletes = athsService.GetAthletes();
+        GetData();
+        Today_DT = DateTime.Today;
+        Today_Local = new LocalDate(Today_DT.Year, Today_DT.Month, Today_DT.Day);
+        BookingDate_DT=Today_DT;
+        BookingDate_Local = Today_Local;
+
+        ThisDate= BookingDate_DT.ToString("D");
         this.StateHasChanged();
     }
 
@@ -83,6 +113,39 @@ else
         homeController.LogOut();
         myService.CallRequestRefresh();
         navigationManager.NavigateTo("/");
+    }
+
+    void DatePickerFocused(FocusEventArgs e)
+    {
+        DatePickerVisible = true;
+        StateHasChanged();
+    }
+
+    void GetData()
+    {
+        athletes = athsService.GetAthletes();
+    }
+
+    void RefreshData(DateTime date)
+    {
+        athletes = athsService.GetAthletes();
+        var aths = from ath in athletes where ath.TimeStamp.Date == date.Date select ath;
+        athletes = aths.ToArray<Athlete>();
+    }
+
+    /*async Task*/
+    void LocaDateSelected(LocalDate localDate)
+    {
+        BookingDate_DT = new DateTime(localDate.Year, localDate.Month, localDate.Day);
+        ThisDate= BookingDate_DT.ToString("D");
+
+        BookingDate_Local = localDate;
+        DatePickerVisible = false;
+        /*await*/
+        RefreshData(BookingDate_DT);
+        StateHasChanged();
+
+
     }
 
 }
