@@ -1,10 +1,24 @@
 ﻿@page "/Log"
 @page "/Log/{CurrentCount:int}"
-@inject NavigationManager navigationManager
+
+@using Newtonsoft.Json;
+@using System;
+@using System.Data;
 @using System.ComponentModel.DataAnnotations;
 @using BlazorQRCode.Data;
+@using System.Net.Http;
+@using System.Net.Http.Json;
+@using System.Text;
+
+@inject NavigationManager navigationManager
 @inject BlazorQRCode.Data.AthleteService  athsService
 @inject BlazorQRCode.Data.HomeController  homeController
+
+@inject HttpClient client
+@inject IJSRuntime JsRuntime
+
+
+
 
 <h2>Aths Essendon Track Log</h2>
 <h1>Log attendance</h1>
@@ -26,6 +40,10 @@
     </div>
     <input type="submit" class="btn btn-primary" value="Log Me" />
 </EditForm>
+@if (@showGif)
+{
+    <img src="./basicloader.gif" />
+}
 @code {
     [Parameter]
     public int? CurrentCount { get; set; }
@@ -36,37 +54,67 @@
     string Output { get; set; } = "";
     string error { get; set; }
 
+    bool showGif = false;
+
+    int Pin = 0;
+
+    HttpClient Http;
+
     void LogOut()
     {
 
     }
- 
+
     protected override void OnInitialized()
     {
+        Http = new HttpClient();
         base.OnInitialized();
         if (homeController.GetState())
         {
             homeController.LogOut();
         }
         CurrentCount = CurrentCount ?? 1;
-        int ticks = homeController.Pin;
-        if (CurrentCount != ticks)
+        Pin = homeController.Pin;
+        if (CurrentCount != Pin)
         {
             navigationManager.NavigateTo("/");
         }
     }
 
 
-    void OnValidSubmit(EditContext editContext)
-    //async Task OnSubmit()
+    //void OnValidSubmit(EditContext editContext)
+    async Task OnValidSubmit()
     {
         error = null;
         try
         {
+            showGif = true;
+            StateHasChanged();
+
             int pin = homeController.Pin;
             string name = athlete.Name;
             string phone = athlete.PhoneNumber;
-            athsService.AddAthlete(name, phone, pin);
+            if (!CheckDetails(name, phone))
+            {
+                showGif = false;
+                await JsRuntime.InvokeAsync<bool>("alert", "Invalid entry: Need Name and valid Mobile.");
+                return;
+            }
+            homeController.Authenticate(name, phone);
+            DAthlete athlete2 = new DAthlete { Name = name, PhoneNumber = phone, Date = DateTime.Now, Email = "a@b.c.com", Pin = Pin };
+
+            var content = new StringContent(
+                    JsonConvert.SerializeObject(athlete2),
+                    Encoding.UTF8,
+                    "application/json");
+
+            var response = await client.PostAsync($"{Settings.baseURL}", content);
+
+            var aths = await client.GetFromJsonAsync<DAthlete[]>($"{Settings.baseURL}");
+
+
+            showGif = false;
+            StateHasChanged();
             string target = $"/Thanks/{pin}";
             navigationManager.NavigateTo(target);
         }
@@ -76,16 +124,47 @@
         }
     }
 
-    public class DAthlete
+    /// <summary>
+    /// Check for a vali mobile number
+    /// Can enter a local landline
+    /// Can enter an email address
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="phone"></param>
+    /// <returns></returns>
+    bool CheckDetails(string name, string phone)
     {
-        [Required]
-        public string Name { get; set; }
+        if (string.IsNullOrEmpty(name))
+            return false;
+        if (string.IsNullOrEmpty(phone))
+            return false;
 
-        [Required]
-        [Phone]
-        public string PhoneNumber { get; set; }
+        //Validate Mobile
+        //0400000000 to 0499999999
+        long MobileNo;
+        if (long.TryParse(phone, out MobileNo))
+        {
+            if (MobileNo >= 0400000000)
+            {
+                if (MobileNo <= 0499999999)
+                {
+                    return true;
+                }
+            }
+            if (MobileNo >= 90000000)
+            {
+                if (MobileNo <= 99999999)
+                {
+                    return true;
+                }
+            }
+        }
+        var foo = new EmailAddressAttribute();
+        if (foo.IsValid("phone"))
+            return true;
 
+        return false;
     }
-
-
 }
+
+

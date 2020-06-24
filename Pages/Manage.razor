@@ -7,6 +7,17 @@
 @inject BlazorQRCode.Data.HomeController  homeController
 @inject BlazorQRCode.Data.MyService  myService
 
+
+@using Newtonsoft.Json;
+@using System;
+@using System.Data;
+@using System.Net.Http;
+@using System.Net.Http.Json;
+@using System.Text;
+
+@inject HttpClient client
+@inject IJSRuntime js
+
 <h2>Aths Essendon Track Log</h2>
 <h1>Management Login</h1>
 
@@ -17,13 +28,18 @@
     <ValidationSummary />
     <div class="form-group">
         <label for="Name">Name</label>
-        <InputText @bind-Value=admin.Name class="form-control" id="Name"  />
+        <InputText @bind-Value=admin.Name class="form-control" id="Name" />
         <ValidationMessage For="@(() => admin.Name)" />
     </div>
     <div class="form-group">
-        <label for="Age">Password</label><br />
-        <InputText type="password" @bind-Value=admin.Pwd class="form-control" id="Mobile"  />
+        <label for="Password">Password</label><br />
+        <InputText type="Password" @bind-Value=admin.Pwd class="form-control" id="Password" />
         <ValidationMessage For="@(() => admin.Pwd)" />
+    </div>
+    <div class="form-group">
+        <label for="Email">Email</label><br />
+        <InputText type="Email" @bind-Value=admin.Email class="form-control" id="Email" />
+        <ValidationMessage For="@(() => admin.Email)" />
     </div>
     <input type="submit" class="btn btn-primary" value="Manage" />
 </EditForm>
@@ -55,7 +71,7 @@
     }
 
 
-    void OnValidSubmit(EditContext editContext)
+    async Task OnValidSubmit(EditContext editContext)
     //async Task OnSubmit()
     {
         error = null;
@@ -65,6 +81,17 @@
             string phone = admin.Pwd;
             if (homeController.Authenticate(name, phone))
             {
+                //Log admin access
+                DAthlete athlete2 = new DAthlete { Name = admin.Name, PhoneNumber = "44444444", Date = DateTime.Now, Email = admin.Name, Pin = 999 };
+
+                var content = new StringContent(
+                        JsonConvert.SerializeObject(athlete2),
+                        Encoding.UTF8,
+                        "application/json");
+
+                var response = await client.PostAsync("https://athsessgate.azurewebsites.net/api/DAthletes", content);
+
+                var aths = await client.GetFromJsonAsync<DAthlete[]>("https://athsessgate.azurewebsites.net/api/DAthletes");
                 myService.CallRequestRefresh();
                 string target = $"/FetchData/{Settings.FetchDataPin}";
                 navigationManager.NavigateTo(target);
@@ -85,6 +112,9 @@
 
         [Required]
         public string Pwd { get; set; }
+
+        [Required]
+        public string Email { get; set; }
 
     }
 

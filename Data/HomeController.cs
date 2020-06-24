@@ -46,13 +46,12 @@ namespace BlazorQRCode.Data
 
         public HomeController()
         {
-            System.Diagnostics.Debug.WriteLine("5.1");
             if (Admins == null)
             {
                 Admins = new List<Admin>();
-                Admins.Add( new Admin{Name= "Admin",Pwd ="PWD"} );
+                Admins.Add(new Admin { Name = "AdminDjaus", Pwd = "P@sSw0rD"} );
+                Admins.Add(new Admin { Name = "AdminJohnC", Pwd = "P@sSw0rD" });
             }
-            System.Diagnostics.Debug.WriteLine("5.10");
         }
 
     }

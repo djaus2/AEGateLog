@@ -1,70 +1,112 @@
 @page "/fetchdata"
 @page "/fetchdata/{CurrentCount:int}"
+@using System;
+@using System.Text;
 @using NodaTime;
-@using System
+@using Newtonsoft;
 @using BlazorQRCode.Data;
 @inject BlazorQRCode.Data.AthleteService  athsService
 @inject BlazorQRCode.Data.HomeController  homeController
 @inject NavigationManager navigationManager
 @inject BlazorQRCode.Data.MyService  myService
 
+@using System.ComponentModel.DataAnnotations;
+@using System.Net.Http;
+@using System.Net.Http.Json;
+@using Telerik.Blazor.Components
+
+
+@inject HttpClient client
+@inject IJSRuntime JsRuntime
+
 <h2>Aths Essendon Track Log</h2>
 <h1>Logged Athletes</h1>
 <br />
 @if (athsService == null)
 {
-<p><em>Loading...</em></p>
+    <p><em>Loading...</em></p>
 }
 else
 {
-<table class="table2">
-    <tbody>
+    <table class="table2">
+        <tbody>
+            <tr>
+                <td colspan="3">
+                    <input id="Date" value=@ThisDate type="text" @onfocus="@DatePickerFocused" />
+                    <DatePicker Style="opacity:1" SelectedDate="BookingDate_Local" Visible="DatePickerVisible" OnSelected="LocaDateSelected" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="table2">
         <tr>
-            <td colspan="3">
-                <input id="Date" value=@ThisDate type="text" @onfocus="@DatePickerFocused" />
-                <DatePicker Style="opacity:1" SelectedDate="BookingDate_Local" Visible="DatePickerVisible" OnSelected="LocaDateSelected"   />
-            </td>
+            <td> <button class="btn btn-primary" @onclick="GetData">Get all Data</button></td>
+            <td>&nbsp;&nbsp;</td>
+            <td> <button class="btn btn-primary" @onclick="ClearData">Clear Data</button></td>
+            <td>&nbsp;&nbsp;</td>
+            <td><button class="btn btn-primary" @onclick="LogOut">LogOut</button></td>
+            <td><button class="btn btn-primary" @onclick="DaysAgo28">28 Days Ago</button></td>
         </tr>
-    </tbody>
-</table>
 
-<table class="table2">
-    <tr>
-        <td> <button class="btn btn-primary" @onclick="GetData">Get all Data</button></td>
-        <td>&nbsp;&nbsp;</td>
-        <td> <button class="btn btn-primary" @onclick="ClearData">Clear Data</button></td>
-        <td>&nbsp;&nbsp;</td>
-        <td><button class="btn btn-primary" @onclick="LogOut">LogOut</button></td>
-    </tr>
-
-</table>
-<p><b>Note: After logging in/out please refresh the rendered page.</b></p>
-
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Mobile</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Pin</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var ath in athletes)
-            {
-        <tr>
-            <td>@ath.Name</td>
-            <td>@ath.PhoneNumber</td>
-            <td>@ath.Date</td>
-            <td>@ath.Time</td>
-            <td>@ath.Pin</td>
-        </tr>
-            }
-    </tbody>
-</table>
-            }
+    </table>
+    <p><b>Note: After logging in/out please refresh the rendered page.</b></p>
+    @if (@showGif)
+    {
+        <img src="./basicloader.gif" />
+    }
+    <label>@Message</label>
+    @if (athletes == null)
+    {
+        <label>Please wait ..Loading data.</label>
+    }
+    else
+    {
+        @*<table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Email</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Pin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ath in athletes)
+                    {
+                        <tr>
+                            <td>@ath.Id</td>
+                            <td>@ath.Name</td>
+                            <td>@ath.PhoneNumber</td>
+                            <td>@ath.Email</td>
+                            <td>@ath._Date</td>
+                            <td>@ath._Time</td>
+                            <td>@ath.Pin</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>*@
+        <TelerikGrid Data="@athletes"
+                     OnDelete="@DeleteHandler"
+                     Resizable="true" Reorderable="true">
+            <GridColumns>
+                <GridColumn Field=@nameof(DAthlete.Id) Title="Id" Editable="false" />
+                <GridColumn Field=@nameof(DAthlete.Name) Title="Name" Editable="false" />
+                <GridColumn Field=@nameof(DAthlete.PhoneNumber) Title="Mobile" Editable="false" />
+                <GridColumn Field=@nameof(DAthlete.Email) Title="Email" Editable="false" />
+                <GridColumn Field=@nameof(DAthlete._Date) Title="Date" Editable="false" />
+                <GridColumn Field=@nameof(DAthlete._Time) Title="Time" Editable="false" />
+                <GridColumn Field=@nameof(DAthlete.Pin) Title="Pin" Editable="false" />
+                <GridCommandColumn>
+                    <GridCommandButton Command="Delete" Icon="delete">Delete</GridCommandButton>
+                </GridCommandColumn>
+            </GridColumns>
+        </TelerikGrid>
+    }
+}
 
 @code {
 
@@ -76,9 +118,12 @@ else
     LocalDate Today_Local;
     LocalDate BookingDate_Local;
     string ThisDate;
-    bool DatePickerVisible=false;
+    bool DatePickerVisible = false;
 
-    protected override void OnInitialized()
+    bool showGif = false;
+    string Message = null;
+
+    protected override async Task OnInitializedAsync()
     {
         base.OnInitialized();
         CurrentCount = CurrentCount ?? 1;
@@ -90,22 +135,24 @@ else
         {
             navigationManager.NavigateTo("/");
         }
-        GetData();
+        await GetData();
         Today_DT = DateTime.Today;
         Today_Local = new LocalDate(Today_DT.Year, Today_DT.Month, Today_DT.Day);
-        BookingDate_DT=Today_DT;
+        BookingDate_DT = Today_DT;
         BookingDate_Local = Today_Local;
 
-        ThisDate= BookingDate_DT.ToString("D");
+        ThisDate = BookingDate_DT.ToString("D");
         this.StateHasChanged();
     }
 
-    private Athlete[] athletes;
+    private DAthlete[] athletes = null;
+    private DAthlete[] AllAthletes;
 
-    private void ClearData()
+    private async Task ClearData()
     {
         athsService.ClearData();
-        athletes = athsService.GetAthletes();
+        athletes = await client.GetFromJsonAsync<DAthlete[]>($"{Settings.baseURL}");
+        AllAthletes = athletes;
     }
 
     private void LogOut()
@@ -121,30 +168,94 @@ else
         StateHasChanged();
     }
 
-    void GetData()
+    async Task GetData()
     {
-        athletes = athsService.GetAthletes();
+        showGif = true;
+        StateHasChanged();
+        athletes = await client.GetFromJsonAsync<DAthlete[]>($"{Settings.baseURL}");
+        AllAthletes = athletes;
+        showGif = false;
+        StateHasChanged();
     }
 
     void RefreshData(DateTime date)
     {
-        athletes = athsService.GetAthletes();
-        var aths = from ath in athletes where ath.TimeStamp.Date == date.Date select ath;
-        athletes = aths.ToArray<Athlete>();
+        //athletes = await client.GetFromJsonAsync<DAthlete[]>($"{Settings.baseURL}");
+        var aths = from ath in AllAthletes where ath.Date.Date == date.Date select ath;
+        athletes = aths.ToArray<DAthlete>();
     }
 
     /*async Task*/
     void LocaDateSelected(LocalDate localDate)
     {
         BookingDate_DT = new DateTime(localDate.Year, localDate.Month, localDate.Day);
-        ThisDate= BookingDate_DT.ToString("D");
+        ThisDate = BookingDate_DT.ToString("D");
 
         BookingDate_Local = localDate;
         DatePickerVisible = false;
-        /*await*/
         RefreshData(BookingDate_DT);
         StateHasChanged();
+    }
 
+
+    async Task DeleteHandler(GridCommandEventArgs args)
+    {
+        //AppendToLog("Delete", args);
+
+        DAthlete item = (DAthlete)args.Item;
+
+        if (item != null)
+        {        // perform actual data source operation here through your service
+            bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Do you wish to delete that booking slot?");
+            if (confirmed)
+            {
+                showGif = true;
+                StateHasChanged();
+                string target = $"{Settings.baseURL}/{item.Id}";
+
+                var response = await client.DeleteAsync(target);
+                if ((response.StatusCode != System.Net.HttpStatusCode.OK) && (response.StatusCode != System.Net.HttpStatusCode.NoContent))
+                {
+                    Message = $"Code: {response.StatusCode}  Reason: {response.ReasonPhrase} Request: {response.RequestMessage}";
+                }
+
+                showGif = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    async Task DaysAgo28()
+    {
+        if (BookingDate_DT != Today_DT)
+            return;
+        showGif = true;
+        DateTime daysAgo = BookingDate_DT.AddDays(-27).Date;
+        var aths = from ath in AllAthletes where DateTime.Compare(ath.Date.Date ,daysAgo) <0  select ath;
+        athletes = aths.ToArray<DAthlete>();
+        StateHasChanged();
+        if (athletes.Count() == 0)
+        {
+            showGif = false;
+            await JsRuntime.InvokeAsync<bool>("alert", "No logs from 28 days ago or earlier.");
+
+            return;
+        }
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Do you wish to delete all of the entries 28 days ago or earlier?");
+        if (confirmed)
+        {
+            foreach (var ath in athletes)
+            {
+                string target = $"{ Settings.baseURL}/{ath.Id}";
+
+                var response = await client.DeleteAsync(target);
+                if ((response.StatusCode != System.Net.HttpStatusCode.OK) && (response.StatusCode != System.Net.HttpStatusCode.NoContent))
+                {
+                    Message = $"Code: {response.StatusCode}  Reason: {response.ReasonPhrase} Request: {response.RequestMessage}";
+                }
+            }
+        }
+        showGif = false;
 
     }
 

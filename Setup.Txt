@@ -1,0 +1,29 @@
+﻿Setup
+-----
+
+1. Open appsettings.json
+2. Uses MS SQLExpress. Change the Connection String if using other (I used an Azure SQL DB).
+2. Enable it in the build through Propeties (Copy)
+    In Tools/Nuget Package Manager/Package Manger Console:
+    - May need to install through Nuget: Microsoft.EntityFrameworkCore.Tools.
+    Then in that Console:
+3. add-migration Initial
+4. update-database
+
+====================================================
+
+Database setup using Entity Framework Migration
+-----------------------------------------------
+
+Changing the class. i.e. New Table
+1. Delete the Migrations Folder
+
+Open “Package Manager Console” from Tools menu and use below command to create migration script.
+ 
+2. add-migration Initial  (Nb: Later rename Initial to something else)
+ 
+This command will create a new migration script class file under a new “Migrations” folder.
+ 
+We can use below command to execute the migration script class.
+ 
+3. update-database

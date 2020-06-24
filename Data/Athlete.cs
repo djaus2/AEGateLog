@@ -1,10 +1,13 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 
 namespace BlazorQRCode.Data
 {
     public class Athlete
     {
+        [Key]
+        public int Id { get; set; }
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public DateTime TimeStamp { get; set; }

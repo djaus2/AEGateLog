@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BlazorQRCode.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Net.Http;
 
 namespace BlazorQRCode
 {
@@ -34,6 +36,9 @@ namespace BlazorQRCode
             services.AddSingleton<HomeController>();
             services.AddSingleton<MyService>();
             services.AddHttpContextAccessor();
+            services.AddDbContext<ApplicationDBContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddTransient(sp => new HttpClient { BaseAddress = new Uri($"http://localhost:44362") });
+            services.AddTelerikBlazor();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,6 +62,7 @@ namespace BlazorQRCode
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapControllers();
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
