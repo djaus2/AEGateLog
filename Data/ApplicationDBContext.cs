@@ -11,6 +11,6 @@ namespace BlazorQRCode.Data
         public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options)
         {
         }
-        public DbSet<DAthlete> DAthletes { get; set; }
+        public DbSet<D2Athlete> D2Athletes { get; set; }
     }
 }

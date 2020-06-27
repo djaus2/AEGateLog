@@ -93,13 +93,13 @@ else
                      OnDelete="@DeleteHandler"
                      Resizable="true" Reorderable="true">
             <GridColumns>
-                <GridColumn Field=@nameof(DAthlete.Id) Title="Id" Editable="false" />
-                <GridColumn Field=@nameof(DAthlete.Name) Title="Name" Editable="false" />
-                <GridColumn Field=@nameof(DAthlete.PhoneNumber) Title="Mobile" Editable="false" />
-                <GridColumn Field=@nameof(DAthlete.Email) Title="Email" Editable="false" />
-                <GridColumn Field=@nameof(DAthlete._Date) Title="Date" Editable="false" />
-                <GridColumn Field=@nameof(DAthlete._Time) Title="Time" Editable="false" />
-                <GridColumn Field=@nameof(DAthlete.Pin) Title="Pin" Editable="false" />
+                <GridColumn Field=@nameof(D2Athlete.Id) Title="Id" Editable="false" />
+                <GridColumn Field=@nameof(D2Athlete.Name) Title="Name" Editable="false" />
+                <GridColumn Field=@nameof(D2Athlete.PhoneNumber) Title="Mobile" Editable="false" />
+                <GridColumn Field=@nameof(D2Athlete.Email) Title="Email" Editable="false" />
+                <GridColumn Field=@nameof(D2Athlete._Date) Title="Date" Editable="false" />
+                <GridColumn Field=@nameof(D2Athlete._Time) Title="Time" Editable="false" />
+                <GridColumn Field=@nameof(D2Athlete.Pin) Title="Pin" Editable="false" />
                 <GridCommandColumn>
                     <GridCommandButton Command="Delete" Icon="delete">Delete</GridCommandButton>
                 </GridCommandColumn>
@@ -145,13 +145,13 @@ else
         this.StateHasChanged();
     }
 
-    private DAthlete[] athletes = null;
-    private DAthlete[] AllAthletes;
+    private D2Athlete[] athletes = null;
+    private D2Athlete[] AllAthletes;
 
     private async Task ClearData()
     {
         athsService.ClearData();
-        athletes = await client.GetFromJsonAsync<DAthlete[]>($"{Settings.baseURL}");
+        athletes = await client.GetFromJsonAsync<D2Athlete[]>($"{Settings.baseURL}");
         AllAthletes = athletes;
     }
 
@@ -172,7 +172,7 @@ else
     {
         showGif = true;
         StateHasChanged();
-        athletes = await client.GetFromJsonAsync<DAthlete[]>($"{Settings.baseURL}");
+        athletes = await client.GetFromJsonAsync<D2Athlete[]>($"{Settings.baseURL}");
         AllAthletes = athletes;
         showGif = false;
         StateHasChanged();
@@ -180,9 +180,9 @@ else
 
     void RefreshData(DateTime date)
     {
-        //athletes = await client.GetFromJsonAsync<DAthlete[]>($"{Settings.baseURL}");
+        //athletes = await client.GetFromJsonAsync<D2Athlete[]>($"{Settings.baseURL}");
         var aths = from ath in AllAthletes where ath.Date.Date == date.Date select ath;
-        athletes = aths.ToArray<DAthlete>();
+        athletes = aths.ToArray<D2Athlete>();
     }
 
     /*async Task*/
@@ -202,7 +202,7 @@ else
     {
         //AppendToLog("Delete", args);
 
-        DAthlete item = (DAthlete)args.Item;
+        D2Athlete item = (D2Athlete)args.Item;
 
         if (item != null)
         {        // perform actual data source operation here through your service
@@ -232,7 +232,7 @@ else
         showGif = true;
         DateTime daysAgo = BookingDate_DT.AddDays(-27).Date;
         var aths = from ath in AllAthletes where DateTime.Compare(ath.Date.Date ,daysAgo) <0  select ath;
-        athletes = aths.ToArray<DAthlete>();
+        athletes = aths.ToArray<D2Athlete>();
         StateHasChanged();
         if (athletes.Count() == 0)
         {

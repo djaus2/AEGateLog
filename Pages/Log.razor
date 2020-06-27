@@ -17,6 +17,9 @@
 @inject HttpClient client
 @inject IJSRuntime JsRuntime
 
+@using AspNetMonsters.Blazor.Geolocation
+@inject LocationService  LocationService
+
 
 
 
@@ -40,6 +43,12 @@
     </div>
     <input type="submit" class="btn btn-primary" value="Log Me" />
 </EditForm>
+<h3>You are here</h3>
+<div>
+    Lat: @location?.Latitude <br />
+    Long: @location?.Longitude <br />
+    Accuracy: @location?.Accuracy <br />
+</div>
 @if (@showGif)
 {
     <img src="./basicloader.gif" />
@@ -48,7 +57,9 @@
     [Parameter]
     public int? CurrentCount { get; set; }
 
-    DAthlete athlete = new DAthlete();
+    public int mode { get; set; } = 1;
+
+    D2Athlete athlete = new D2Athlete();
     string PhoneText { get; set; } = "04";
     string Club { get; set; } = "";
     string Output { get; set; } = "";
@@ -63,6 +74,23 @@
     void LogOut()
     {
 
+    }
+
+    Location location = null;
+
+    protected async Task GetLocation()
+    {
+        location = await LocationService.GetLocationAsync();
+        this.StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool first)
+    {
+        if (first)
+        {
+            base.OnAfterRender(first);
+            await GetLocation();
+        }
     }
 
     protected override void OnInitialized()
@@ -101,16 +129,27 @@
                 return;
             }
             homeController.Authenticate(name, phone);
-            DAthlete athlete2 = new DAthlete { Name = name, PhoneNumber = phone, Date = DateTime.Now, Email = "a@b.c.com", Pin = Pin };
+            D2Athlete athlete2 = new D2Athlete { Name = name, PhoneNumber = phone, Date = DateTime.Now, Email = "a@b.c.com", Mode = mode, Pin = Pin };
+            if (location != null)
+            {
+                //MS SQL serer truncates decimal to 2 decimal digits
+                //Ref: https://mattferderer.com/entity-framework-no-type-was-specified-for-the-decimal-column
+                decimal? latitude = location?.Latitude * 1000000;
+                decimal? longitute = location?.Longitude * 1000000;
+                decimal? accuracy = location?.Accuracy * 1000000;
+                athlete2.Latitude = latitude;
+                athlete2.Longitude = longitute;
+                athlete2.Accuracy = accuracy;
+            }
 
             var content = new StringContent(
-                    JsonConvert.SerializeObject(athlete2),
-                    Encoding.UTF8,
-                    "application/json");
+                JsonConvert.SerializeObject(athlete2),
+                Encoding.UTF8,
+                "application/json");
 
             var response = await client.PostAsync($"{Settings.baseURL}", content);
 
-            var aths = await client.GetFromJsonAsync<DAthlete[]>($"{Settings.baseURL}");
+            var aths = await client.GetFromJsonAsync<D2Athlete[]>($"{Settings.baseURL}");
 
 
             showGif = false;

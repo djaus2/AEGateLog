@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BlazorQRCode.Data
 {
-    public class DAthlete
+    public class D2Athlete
     {
         [Key]
         [Column("Id")]
@@ -34,15 +34,35 @@ namespace BlazorQRCode.Data
         [JsonPropertyName("DTicks")]
         public long DTicks { get; set; }
 
+        [Column("Mode")]
+        [JsonPropertyName("Mode")]
+        public int Mode { get; set; } = 1;
+
+        //MS SQL serer truncates decimal to 2 decimal digits
+        //Ref: https://mattferderer.com/entity-framework-no-type-was-specified-for-the-decimal-column
+        //Note stored decimals here hae been multipled by 1000000
+
+        [Column("Latitude",TypeName = "decimal(18,2)")]
+        [JsonPropertyName("Latitude")]
+        public decimal? Latitude { get; set; } = 1;
+
+        [Column("Longitude", TypeName = "decimal(18,2)")]
+        [JsonPropertyName("Longitude")]
+        public decimal? Longitude { get; set; } = 1;
+
+        [Column("Accuracy", TypeName = "decimal(18,2)")]
+        [JsonPropertyName("Accuracy")]
+        public decimal? Accuracy { get; set; } = 1;
+
 
 
         [Column("Pin")]
         [JsonPropertyName("Pin")]
         public int Pin { get; set; }
 
-        public DAthlete() {  }
+        public D2Athlete() {  }
 
-        public DAthlete(DateTime date ) { Date = date; }
+        public D2Athlete(DateTime date ) { Date = date; }
 
         [NotMapped]
         [JsonIgnore]

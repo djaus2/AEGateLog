@@ -11,10 +11,10 @@ namespace BlazorQRCode.Data
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DAthletesController : ControllerBase
+    public class D2AthletesController : ControllerBase
     {
         private readonly ApplicationDBContext _context;
-        public DAthletesController(ApplicationDBContext context)
+        public D2AthletesController(ApplicationDBContext context)
         {
             this._context = context;
         }
@@ -22,29 +22,29 @@ namespace BlazorQRCode.Data
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var athletes =  await _context.DAthletes.ToListAsync();
+            var athletes =  await _context.D2Athletes.ToListAsync();
             return Ok(athletes);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var dev = await _context.DAthletes.FirstOrDefaultAsync(a => a.Id == id);
+            var dev = await _context.D2Athletes.FirstOrDefaultAsync(a => a.Id == id);
             return Ok(dev);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(DAthlete dathlete)
+        public async Task<IActionResult> Post(D2Athlete d2athlete)
         {
-            _context.Add(dathlete);
+            _context.Add(d2athlete);
             await _context.SaveChangesAsync();
-            return Ok(dathlete.Id);
+            return Ok(d2athlete.Id);
         }
 
         [HttpPut]
-        public async Task<IActionResult> Put(DAthlete dathlete)
+        public async Task<IActionResult> Put(D2Athlete d2athlete)
         {
-            _context.Entry(dathlete).State = EntityState.Modified;
+            _context.Entry(d2athlete).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return NoContent();
         }
@@ -52,7 +52,7 @@ namespace BlazorQRCode.Data
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var dev = new DAthlete { Id = id };
+            var dev = new D2Athlete { Id = id };
             _context.Remove(dev);
             await _context.SaveChangesAsync();
             return NoContent();
